@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}Application History{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">My Application History</h2>
+    <a href="{{ url_for('view_drives') }}" class="btn btn-primary">Browse New Drives</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Drive Title</th>
+                        <th>Company Name</th>
+                        <th>Application Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td class="fw-bold">{{ app.job_title }}</td>
+                        <td>{{ app.company_name }}</td>
+                        <td>{{ app.application_date }}</td>
+                        <td>
+                            <span class="badge {% if app.status == 'Selected' %}bg-success{% elif app.status == 'Shortlisted' %}bg-info{% elif app.status == 'Rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ app.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <h5 class="text-muted">No application records found.</h5>
+                            <a href="{{ url_for('view_drives') }}" class="btn btn-sm btn-outline-primary mt-2">Find
+                                Opportunities</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

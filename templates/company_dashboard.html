@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block title %}Company Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="mb-4">
+        <h2 class="fw-bold">My Placement Drives</h2>
+        <div class="badge bg-info">Company ID: {{ company.company_code }}</div>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+        <a href="{{ url_for('view_applicants') }}" class="btn btn-outline-primary">View All Applicants</a>
+        <a href="{{ url_for('create_drive') }}" class="btn btn-primary">+ Create New Drive</a>
+    </div>
+</div>
+
+<div class="row">
+    {% for drive in drives %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title fw-bold">{{ drive.job_title }}</h5>
+                    <span class="badge badge-{{ drive.status|lower }}">{{ drive.status }}</span>
+                </div>
+                <div class="mb-2">
+                </div>
+                <p class="card-text text-muted small mb-3">{{ drive.job_description[:100] }}...</p>
+                <div class="mb-3">
+                    <small class="d-block text-muted"><strong>Eligibility:</strong> {{ drive.eligibility }}</small>
+                    <small class="d-block text-muted"><strong>Deadline:</strong> {{ drive.deadline }}</small>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('view_applicants', drive_id=drive.id) }}"
+                        class="btn btn-sm btn-outline-primary">View Applicants</a>
+                    {% if drive.status != 'Closed' %}
+                    <a href="{{ url_for('close_drive', id=drive.id) }}" class="btn btn-sm btn-outline-danger">Close
+                        Drive</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <h4 class="text-muted">You haven't created any drives yet.</h4>
+        <a href="{{ url_for('create_drive') }}" class="btn btn-primary mt-3">Create Your First Drive</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block title %}View Applicants {% if drive %}- {{ drive.job_title }}{% else %}- All Drives{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1">
+                        <li class="breadcrumb-item"><a href="{{ url_for('company_dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Applicants</li>
+                    </ol>
+                </nav>
+                <h2 class="fw-bold mb-0">{% if drive %}Applicants for {{ drive.job_title }}{% else %}All Applicants{%
+                    endif %}</h2>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student Name</th>
+                        {% if not drive %}<th>Job Title</th>{% endif %}
+                        <th>Email</th>
+                        <th>Applied Date</th>
+                        <th>Status</th>
+                        <th>Resume</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applicants %}
+                    <tr>
+                        <td class="fw-bold">{{ app.name }}</td>
+                        {% if not drive %}<td>{{ app.job_title }}</td>{% endif %}
+                        <td>{{ app.email }}</td>
+                        <td>{{ app.application_date }}</td>
+                        <td>
+                            <span class="badge {% if app.app_status == 'Selected' %}bg-success{% elif app.app_status == 'Shortlisted' %}bg-info{% elif app.app_status == 'Rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ app.app_status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if app.resume_path %}
+                            <a href="{{ url_for('static', filename='uploads/' + app.resume_path) }}"
+                                class="btn btn-sm btn-outline-info" target="_blank">View Resume</a>
+                            {% else %}
+                            <span class="text-muted small">No Resume</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-secondary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown">
+                                    Update Status
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                            href="{{ url_for('update_application_status', app_id=app.app_id, status='Shortlisted') }}">Shortlist</a>
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                            href="{{ url_for('update_application_status', app_id=app.app_id, status='Selected') }}">Select</a>
+                                    </li>
+                                    <li><a class="dropdown-item"
+                                            href="{{ url_for('update_application_status', app_id=app.app_id, status='Rejected') }}">Reject</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="{% if not drive %}7{% else %}6{% endif %}" class="text-center py-4 text-muted">No
+                            applications yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

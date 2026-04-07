@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block title %}My Applications{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="mb-4">
+        <h2 class="fw-bold">My Applications</h2>
+    </div>
+    <div>
+        <a href="{{ url_for('student_history') }}" class="btn btn-outline-secondary me-2">View History</a>
+        <a href="{{ url_for('view_drives') }}" class="btn btn-primary">Find More Drives</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle tobacco text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Company</th>
+                        <th>Applied On</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td class="fw-bold">{{ app.job_title }}</td>
+                        <td>{{ app.company_name }}</td>
+                        <td>{{ app.application_date }}</td>
+                        <td>
+                            <span class="badge {% if app.status == 'Selected' %}bg-success{% elif app.status == 'Shortlisted' %}bg-info{% elif app.status == 'Rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ app.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <h5 class="text-muted">You haven't applied to any drives yet.</h5>
+                            <a href="{{ url_for('view_drives') }}" class="btn btn-sm btn-outline-primary mt-2">Browse
+                                Drives</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

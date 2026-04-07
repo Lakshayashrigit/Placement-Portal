@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}All Applications - Admin{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h2 class="fw-bold mb-4">Historical Application Data</h2>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle tobacco">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Drive Title</th>
+                        <th>Company ID</th>
+                        <th>Company Name</th>
+                        <th>Applied On</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td class="fw-bold">{{ app.student_name }}</td>
+                        <td class="fw-bold">{{ app.job_title }}</td>
+                        <td>{{ app.company_code }}</td>
+                        <td class="fw-bold">{{ app.company_name }}</td>
+                        <td>{{ app.application_date }}</td>
+                        <td>
+                            <span class="badge {% if app.status == 'Selected' %}bg-success{% elif app.status == 'Shortlisted' %}bg-info{% elif app.status == 'Rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ app.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No application records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

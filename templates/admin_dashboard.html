@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Admin Dashboard</h2>
+    <a href="{{ url_for('view_all_applications') }}" class="btn btn-outline-info">View All Applications</a>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-3 mb-3">
+        <div class="card p-4 text-center">
+            <h5 class="text-muted mb-2">Total Students</h5>
+            <h2 class="fw-bold mb-0">{{ stats.students }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card p-4 text-center">
+            <h5 class="text-muted mb-2">Total Companies</h5>
+            <h2 class="fw-bold mb-0">{{ stats.companies }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card p-4 text-center">
+            <h5 class="text-muted mb-2">Total Drives</h5>
+            <h2 class="fw-bold mb-0">{{ stats.drives }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card p-4 text-center">
+            <h5 class="text-muted mb-2">Applications</h5>
+            <h2 class="fw-bold mb-0">{{ stats.applications }}</h2>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Pending Company Approvals</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Company ID</th>
+                                <th>Company Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for company in pending_companies %}
+                            <tr>
+                                <td>{{ company.company_code }}</td>
+                                <td>
+                                    <div class="fw-bold">{{ company.company_name }}</div>
+                                    <small class="text-muted">{{ company.email }}</small>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('approve_company', id=company.id, action='approve') }}"
+                                        class="btn btn-sm btn-success">Approve</a>
+                                    <a href="{{ url_for('approve_company', id=company.id, action='reject') }}"
+                                        class="btn btn-sm btn-outline-danger">Reject</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No pending approvals</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Pending Drive Approvals</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Company ID</th>
+                                <th>Drive</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for drive in pending_drives %}
+                            <tr>
+                                <td>{{ drive.company_code }}</td>
+                                <td>
+                                    <div class="fw-bold">{{ drive.job_title }}</div>
+                                    <small class="text-muted">{{ drive.company_name }}</small>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('approve_drive', id=drive.id, action='approve') }}"
+                                        class="btn btn-sm btn-success">Approve</a>
+                                    <a href="{{ url_for('approve_drive', id=drive.id, action='reject') }}"
+                                        class="btn btn-sm btn-outline-danger">Reject</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No pending drives</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}Available Placement Drives{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h2 class="fw-bold">Available Placement Drives</h2>
+</div>
+
+<div class="row">
+  {% for drive in drives %}
+  <div class="col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <h5 class="card-title fw-bold">{{ drive.job_title }}</h5>
+          <div>
+            <span class="badge bg-primary">{{ drive.company_name }}</span>
+            <span class="badge bg-info">{{ drive.status }}</span>
+          </div>
+        </div>
+        <div class="mb-2">
+        </div>
+        <p class="card-text text-muted small mb-3">{{ drive.job_description[:120] }}...</p>
+        <div class="mb-4">
+          <small class="d-block text-muted"><strong>Eligibility:</strong> {{ drive.eligibility }}</small>
+          <small class="d-block text-muted"><strong>Deadline:</strong> {{ drive.deadline }}</small>
+        </div>
+        <div class="d-grid shadow-sm">
+          {% if drive.id in applied_ids %}
+          <button class="btn btn-success disabled">Already Applied</button>
+          {% else %}
+          <a href="{{ url_for('apply_drive', drive_id=drive.id) }}" class="btn btn-primary">Apply Now</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12 text-center py-5">
+    <h4 class="text-muted">No approved placement drives available at the moment.</h4>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

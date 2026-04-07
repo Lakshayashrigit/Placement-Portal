@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h2 class="fw-bold mb-4">Edit Profile</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                    <small class="text-muted">Email cannot be changed.</small>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Upload Resume (PDF)</label>
+                    <input type="file" name="resume" class="form-control" accept=".pdf">
+                    {% if user.resume_path %}
+                    <div class="mt-2">
+                        <span class="badge bg-info text-dark">Resume Uploaded</span>
+                        <a href="{{ url_for('static', filename='uploads/' + user.resume_path) }}" class="ms-2 small"
+                            target="_blank">View current</a>
+                    </div>
+                    {% else %}
+                    <div class="mt-2">
+                        <span class="badge bg-warning text-dark">No Resume Uploaded</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
