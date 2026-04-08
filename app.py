@@ -11,6 +11,7 @@ from flask import Flask, render_template, request, redirect, session, url_for, f
 import sqlite3
 import models
 from models import get_db_connection, init_db
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = "placement_portal_secret"
@@ -39,8 +40,15 @@ def login_required(role=None):
 # --- Routes ---
 
 @app.route("/")
+@app.route("/home")
 def home():
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
     return render_template("index.html")
+
+@app.route("/select_role")
+def select_role():
+    return redirect(url_for('home'))
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -111,13 +119,16 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    selected_role = request.args.get('role')
+    
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
+        role_from_form = request.form.get("role") # Hidden field from form
         
         if not email or not password:
             flash("Email and password are required.", "danger")
-            return redirect(url_for('login'))
+            return redirect(url_for('login', role=role_from_form))
         
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -126,13 +137,18 @@ def login():
         conn.close()
         
         if user:
+            # Role Validation
+            if role_from_form and user['role'] != role_from_form:
+                flash(f"Invalid role selected for this account. This account is registered as a {user['role']}.", "danger")
+                return redirect(url_for('login', role=role_from_form))
+            
             if not user['active']:
                 flash("Your account is deactivated.", "danger")
-                return redirect(url_for('login'))
+                return redirect(url_for('login', role=role_from_form))
             
             if user['role'] == 'company' and not user['approved']:
                 flash("Your account is pending admin approval.", "warning")
-                return redirect(url_for('login'))
+                return redirect(url_for('login', role=role_from_form))
                 
             session['user_id'] = user['id']
             session['user_name'] = user['name']
@@ -140,8 +156,9 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             flash("Invalid credentials.", "danger")
+            return redirect(url_for('login', role=role_from_form))
             
-    return render_template("login.html")
+    return render_template("login.html", selected_role=selected_role)
 
 @app.route("/dashboard")
 def dashboard():
@@ -227,9 +244,10 @@ def manage_users():
         SELECT u.*, c.company_name, c.id as company_id, c.company_code 
         FROM users u 
         LEFT JOIN companies c ON u.id = c.user_id 
-        WHERE u.role != 'admin' AND (u.name LIKE ? OR u.email LIKE ? OR c.company_name LIKE ? OR c.company_code LIKE ?)
+        WHERE u.role != 'admin' AND (u.name LIKE ? OR u.email LIKE ? OR c.company_name LIKE ? OR c.company_code LIKE ? OR u.id LIKE ? OR c.id LIKE ?)
     """
-    users = cursor.execute(query, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%')).fetchall()
+    params = [f'%{search}%'] * 6
+    users = cursor.execute(query, params).fetchall()
     
     conn.close()
     return render_template("manage_users.html", users=users)
@@ -268,11 +286,20 @@ def toggle_user(id):
 @app.route("/company/dashboard")
 @login_required('company')
 def company_dashboard():
+    search = request.args.get('search', '')
     conn = get_db_connection()
     cursor = conn.cursor()
     
     company = cursor.execute("SELECT * FROM companies WHERE user_id = ?", (session['user_id'],)).fetchone()
-    drives = cursor.execute("SELECT * FROM placement_drives WHERE company_id = ?", (company['id'],)).fetchall()
+    
+    query = "SELECT * FROM placement_drives WHERE company_id = ?"
+    params = [company['id']]
+    
+    if search:
+        query += " AND (job_title LIKE ? OR job_description LIKE ?)"
+        params.extend([f'%{search}%', f'%{search}%'])
+        
+    drives = cursor.execute(query, params).fetchall()
     
     conn.close()
     return render_template("company_dashboard.html", drives=drives, company=company)
@@ -301,12 +328,13 @@ def create_drive():
                 return redirect(url_for('company_dashboard'))
 
             company_data = cursor.execute("SELECT id FROM companies WHERE user_id = ?", (session['user_id'],)).fetchone()
+            min_cgpa = request.form.get("min_cgpa", 0)
             
             if company_data:
                 cursor.execute("""
-                    INSERT INTO placement_drives (company_id, job_title, job_description, eligibility, deadline, status)
-                    VALUES (?, ?, ?, ?, ?, 'Pending')
-                """, (company_data['id'], job_title, job_description, eligibility, deadline))
+                    INSERT INTO placement_drives (company_id, job_title, job_description, eligibility, deadline, status, min_cgpa)
+                    VALUES (?, ?, ?, ?, ?, 'Pending', ?)
+                """, (company_data['id'], job_title, job_description, eligibility, deadline, min_cgpa))
                 
                 conn.commit()
                 flash("Drive created and pending admin approval.", "success")
@@ -327,6 +355,7 @@ def create_drive():
 @app.route("/company/view_applicants/<int:drive_id>")
 @login_required('company')
 def view_applicants(drive_id=None):
+    search = request.args.get('search', '')
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -350,6 +379,10 @@ def view_applicants(drive_id=None):
     if drive_id:
         query += " AND a.drive_id = ?"
         params.append(drive_id)
+        
+    if search:
+        query += " AND (u.name LIKE ? OR u.email LIKE ? OR d.job_title LIKE ?)"
+        params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
     
     query += " ORDER BY a.application_date DESC"
     
@@ -427,51 +460,87 @@ def student_history():
 def student_profile():
     conn = get_db_connection()
     cursor = conn.cursor()
+    user_id = session['user_id']
     
     if request.method == "POST":
         name = request.form.get("name")
+        cgpa = request.form.get("cgpa")
         file = request.files.get("resume")
 
         if not name:
             flash("Name is required.", "danger")
+            conn.close()
             return redirect(url_for('student_profile'))
         
+        # Update name and CGPA
+        cursor.execute("UPDATE users SET name = ?, cgpa = ? WHERE id = ?", (name, cgpa, user_id))
+        session['user_name'] = name
+        
+        # Handle Resume Update
         if file and file.filename != '':
-            filename = f"resume_{session['user_id']}_{file.filename}"
+            if not file.filename.lower().endswith('.pdf'):
+                flash("Invalid format. Only PDF files are allowed.", "danger")
+                conn.close()
+                return redirect(url_for('student_profile'))
+
+            # Get existing resume path to delete old file
+            user_data = cursor.execute("SELECT resume_path FROM users WHERE id = ?", (user_id,)).fetchone()
+            if user_data and user_data['resume_path']:
+                old_file_path = os.path.join(app.config['UPLOAD_FOLDER'], user_data['resume_path'])
+                if os.path.exists(old_file_path):
+                    try:
+                        os.remove(old_file_path)
+                    except Exception as e:
+                        print(f"Error deleting old resume: {e}")
+
+            # Save new resume
+            filename = secure_filename(f"resume_{user_id}.pdf")
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            cursor.execute("UPDATE users SET name = ?, resume_path = ? WHERE id = ?", (name, filename, session['user_id']))
+            
+            # Update database
+            cursor.execute("UPDATE users SET resume_path = ? WHERE id = ?", (filename, user_id))
+            flash("Profile and Resume updated successfully.", "success")
         else:
-            cursor.execute("UPDATE users SET name = ? WHERE id = ?", (name, session['user_id']))
+            flash("Profile updated successfully.", "success")
             
         conn.commit()
-        session['user_name'] = name
-        flash("Profile updated.", "success")
 
-    user = cursor.execute("SELECT * FROM users WHERE id = ?", (session['user_id'],)).fetchone()
+    user = cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     conn.close()
     return render_template("student_profile.html", user=user)
 
 @app.route("/view_drives")
 @login_required('student')
 def view_drives():
+    search = request.args.get('search', '')
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Only view approved drives from active companies
-    drives = cursor.execute("""
+    query = """
         SELECT d.*, c.company_name 
         FROM placement_drives d 
         JOIN companies c ON d.company_id = c.id 
         JOIN users u ON c.user_id = u.id
         WHERE d.status = 'Approved' AND u.active = 1
-    """).fetchall()
+    """
+    params = []
+    
+    if search:
+        query += " AND (d.job_title LIKE ? OR c.company_name LIKE ? OR d.job_description LIKE ?)"
+        params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
+        
+    drives = cursor.execute(query, params).fetchall()
     
     # Get user's applied drive IDs
     applied_ids = [a['drive_id'] for a in cursor.execute("SELECT drive_id FROM applications WHERE student_id = ?", (session['user_id'],)).fetchall()]
     
+    # Get student CGPA
+    student = cursor.execute("SELECT cgpa FROM users WHERE id = ?", (session['user_id'],)).fetchone()
+    student_cgpa = student['cgpa'] if student and student['cgpa'] else 0
+    
     conn.close()
-    return render_template("view_drives.html", drives=drives, applied_ids=applied_ids)
+    return render_template("view_drives.html", drives=drives, applied_ids=applied_ids, student_cgpa=student_cgpa)
 
 @app.route("/apply/<int:drive_id>")
 @login_required('student')
@@ -485,9 +554,9 @@ def apply_drive(drive_id):
         flash("Please upload your resume in profile before applying.", "warning")
         return redirect(url_for('student_profile'))
     
-    # Check if drive is closed or company inactive
+    # Check if drive is closed or company inactive, and get min_cgpa
     drive = cursor.execute("""
-        SELECT d.status, u.active 
+        SELECT d.status, u.active, d.min_cgpa, d.job_title 
         FROM placement_drives d 
         JOIN companies c ON d.company_id = c.id 
         JOIN users u ON c.user_id = u.id
@@ -497,6 +566,16 @@ def apply_drive(drive_id):
     if not drive or drive['status'] == 'Closed' or not drive['active']:
         conn.close()
         flash("This drive is no longer accepting applications.", "danger")
+        return redirect(url_for('view_drives'))
+
+    # CGPA Eligibility Check
+    student = cursor.execute("SELECT cgpa FROM users WHERE id = ?", (session['user_id'],)).fetchone()
+    student_cgpa = student['cgpa'] if student and student['cgpa'] else 0
+    min_required = drive['min_cgpa'] if drive['min_cgpa'] else 0
+    
+    if student_cgpa < min_required:
+        conn.close()
+        flash(f"You are not eligible for this drive. Minimum CGPA required is {min_required}", "danger")
         return redirect(url_for('view_drives'))
 
     try:

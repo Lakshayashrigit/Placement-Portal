@@ -3,8 +3,12 @@
 {% block title %}Available Placement Drives{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-  <h2 class="fw-bold">Available Placement Drives</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Available Placement Drives</h2>
+    <form class="d-flex" method="GET">
+        <input class="form-control me-2" type="search" name="search" placeholder="Search by Job, Company..." value="{{ request.args.get('search', '') }}">
+        <button class="btn btn-primary shadow-sm" type="submit"><i class="bi bi-search"></i> Search</button>
+    </form>
 </div>
 
 <div class="row">
@@ -24,11 +28,14 @@
         <p class="card-text text-muted small mb-3">{{ drive.job_description[:120] }}...</p>
         <div class="mb-4">
           <small class="d-block text-muted"><strong>Eligibility:</strong> {{ drive.eligibility }}</small>
+          <small class="d-block text-muted"><strong>Min CGPA Required:</strong> {{ drive.min_cgpa if drive.min_cgpa else 0 }}</small>
           <small class="d-block text-muted"><strong>Deadline:</strong> {{ drive.deadline }}</small>
         </div>
         <div class="d-grid shadow-sm">
           {% if drive.id in applied_ids %}
           <button class="btn btn-success disabled">Already Applied</button>
+          {% elif student_cgpa < (drive.min_cgpa if drive.min_cgpa else 0) %}
+          <button class="btn btn-secondary disabled" title="Your CGPA: {{ student_cgpa }}">Not Eligible (CGPA < {{ drive.min_cgpa }})</button>
           {% else %}
           <a href="{{ url_for('apply_drive', drive_id=drive.id) }}" class="btn btn-primary">Apply Now</a>
           {% endif %}

@@ -22,9 +22,16 @@ def init_db():
             role TEXT NOT NULL, -- admin, company, student
             approved BOOLEAN DEFAULT 0,
             active BOOLEAN DEFAULT 1,
-            resume_path TEXT
+            resume_path TEXT,
+            cgpa REAL
         )
     """)
+
+    # Check for cgpa column in users if it exists (for existing DBs)
+    cursor.execute("PRAGMA table_info(users)")
+    columns = [column[1] for column in cursor.fetchall()]
+    if 'cgpa' not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN cgpa REAL")
 
     # TABLE companies
     cursor.execute("""
@@ -50,9 +57,16 @@ def init_db():
             eligibility TEXT,
             deadline DATE,
             status TEXT DEFAULT 'Pending', -- Pending, Approved, Closed
+            min_cgpa REAL DEFAULT 0,
             FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
         )
     """)
+
+    # Check for min_cgpa column in placement_drives if it exists (for existing DBs)
+    cursor.execute("PRAGMA table_info(placement_drives)")
+    columns = [column[1] for column in cursor.fetchall()]
+    if 'min_cgpa' not in columns:
+        cursor.execute("ALTER TABLE placement_drives ADD COLUMN min_cgpa REAL DEFAULT 0")
 
     # TABLE applications
     cursor.execute("""

@@ -17,14 +17,17 @@
                     <input type="email" class="form-control" value="{{ user.email }}" disabled>
                     <small class="text-muted">Email cannot be changed.</small>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Current CGPA (0-10)</label>
+                    <input type="number" step="0.01" min="0" max="10" name="cgpa" class="form-control" value="{{ user.cgpa if user.cgpa else '' }}" required>
+                </div>
                 <div class="mb-4">
-                    <label class="form-label">Upload Resume (PDF)</label>
+                    <label class="form-label">Update Resume (PDF)</label>
                     <input type="file" name="resume" class="form-control" accept=".pdf">
                     {% if user.resume_path %}
-                    <div class="mt-2">
-                        <span class="badge bg-info text-dark">Resume Uploaded</span>
-                        <a href="{{ url_for('static', filename='uploads/' + user.resume_path) }}" class="ms-2 small"
-                            target="_blank">View current</a>
+                    <div class="mt-2 text-muted">
+                        <a href="{{ url_for('static', filename='uploads/' + user.resume_path) }}" class="fw-bold"
+                            target="_blank">View Current Resume</a>
                     </div>
                     {% else %}
                     <div class="mt-2">
@@ -32,7 +35,7 @@
                     </div>
                     {% endif %}
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                <button type="submit" class="btn btn-primary w-100">Update Resume</button>
             </form>
         </div>
     </div>

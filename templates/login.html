@@ -6,8 +6,16 @@
 <div class="row justify-content-center">
     <div class="col-md-5">
         <div class="card p-4">
-            <h2 class="text-center mb-4 fw-bold">Welcome Back</h2>
+            <h2 class="text-center mb-1 fw-bold">Login</h2>
+            {% if selected_role %}
+                <p class="text-center text-muted mb-4">as <span class="badge bg-primary">{{ selected_role | capitalize }}</span></p>
+            {% else %}
+                <p class="text-center text-muted mb-4">Welcome Back</p>
+            {% endif %}
+
             <form method="POST">
+                <input type="hidden" name="role" value="{{ selected_role or '' }}">
+                
                 <div class="mb-3">
                     <label class="form-label">Email Address</label>
                     <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
@@ -18,8 +26,15 @@
                         required>
                 </div>
                 <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
-                <p class="text-center mb-0 text-muted">Don't have an account? <a href="{{ url_for('register') }}"
-                        class="text-primary text-decoration-none fw-medium">Register here</a></p>
+                
+                <div class="text-center">
+                    <p class="mb-2 text-muted small">Don't have an account? <a href="{{ url_for('register') }}"
+                            class="text-primary text-decoration-none fw-medium">Register here</a></p>
+                    <hr>
+                    <a href="{{ url_for('select_role') }}" class="text-muted text-decoration-none small">
+                        <i class="bi bi-arrow-left"></i> Change Role
+                    </a>
+                </div>
             </form>
         </div>
     </div>

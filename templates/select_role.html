@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% block title %}Select Role - Placement Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="col-md-10 text-center mb-5">
+        <h1 class="fw-bold mb-3">Welcome to Placement Portal</h1>
+        <p class="text-muted lead">Please select your role to continue</p>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center p-4 border-0 shadow-sm" style="transition: transform 0.3s; cursor: pointer;" onclick="location.href='/login?role=student'">
+            <div class="card-body">
+                <div class="display-4 text-primary mb-3">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <h3 class="fw-bold">Student</h3>
+                <p class="text-muted small">View drives, apply for jobs, and manage your profile.</p>
+                <a href="{{ url_for('login', role='student') }}" class="btn btn-outline-primary w-100 stretched-link">Login as Student</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center p-4 border-0 shadow-sm" style="transition: transform 0.3s; cursor: pointer;" onclick="location.href='/login?role=company'">
+            <div class="card-body">
+                <div class="display-4 text-primary mb-3">
+                    <i class="bi bi-building"></i>
+                </div>
+                <h3 class="fw-bold">Company</h3>
+                <p class="text-muted small">Post placement drives and manage student applications.</p>
+                <a href="{{ url_for('login', role='company') }}" class="btn btn-outline-primary w-100 stretched-link">Login as Company</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center p-4 border-0 shadow-sm" style="transition: transform 0.3s; cursor: pointer;" onclick="location.href='/login?role=admin'">
+            <div class="card-body">
+                <div class="display-4 text-dark mb-3">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <h3 class="fw-bold">Admin</h3>
+                <p class="text-muted small">System management, approvals, and user controls.</p>
+                <a href="{{ url_for('login', role='admin') }}" class="btn btn-outline-dark w-100 stretched-link">Login as Admin</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+</style>
+<!-- Tabler Icons or Bootstrap Icons could be added to layout if missing, but let's stick to simple UI first -->
+{% endblock %}

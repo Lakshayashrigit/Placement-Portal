@@ -1,46 +1,103 @@
 {% extends "layout.html" %}
 
-{% block title %}Home - Placement Portal{% endblock %}
+{% block title %}Welcome - Placement Portal{% endblock %}
 
 {% block content %}
-<div class="row align-items-center py-5">
-    <div class="col-lg-6">
-        <h1 class="display-4 fw-bold mb-4">Empowering Your Career Journey</h1>
-        <p class="lead text-muted mb-5">Connect with top companies, explore placement drives, and land your dream job
-            through our comprehensive placement portal.</p>
-        <div class="d-flex gap-3">
-            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4">Get Started</a>
-            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg px-4">Login</a>
+<!-- Hero Section -->
+<div class="row align-items-center mb-5 py-5">
+    <div class="col-lg-6 text-center text-lg-start">
+        <h1 class="display-3 fw-bold mb-3" style="color: #1a365d;">Bridging Dreams and Deliverables</h1>
+        <p class="lead text-muted mb-4">The ultimate destination for students to launch their careers and for companies to find top-tier talent. Simplified, professional, and powerful.</p>
+        <div class="d-flex gap-3 justify-content-center justify-content-lg-start">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-4 shadow">Get Started</a>
+            <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg px-4">Create Account</a>
         </div>
     </div>
-    <div class="col-lg-6 mt-5 mt-lg-0">
-        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-            alt="Career" class="img-fluid rounded-4 shadow-lg">
+    <div class="col-lg-6 d-none d-lg-block">
+        <div class="position-relative">
+            <img src="https://img.freepik.com/free-vector/hiring-process-concept-illustration_114360-642.jpg" alt="Career Journey" class="img-fluid rounded-4">
+        </div>
     </div>
 </div>
 
-<div class="row text-center mt-5">
+<hr class="my-5 opacity-25">
+
+<!-- Role Selection Cards -->
+<div class="row justify-content-center">
+    <div class="col-12 text-center mb-5">
+        <h2 class="fw-bold h1">Explore Your Portal</h2>
+        <p class="text-muted lead">Tailored experiences for every member of the placement ecosystem</p>
+    </div>
+    
+    <!-- Student Card -->
     <div class="col-md-4 mb-4">
-        <div class="card p-4 h-100">
-            <div class="mb-3"><span class="fs-1">🎓</span></div>
-            <h3>For Students</h3>
-            <p class="text-muted">Register, upload your resume, and apply to approved placement drives with ease.</p>
+        <div class="card h-100 text-center p-4 border-0 shadow-sm hover-up animate-card">
+            <div class="card-body">
+                <div class="icon-box mb-4 mx-auto bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-mortarboard-fill fs-2"></i>
+                </div>
+                <h3 class="fw-bold mb-3">Students</h3>
+                <p class="text-muted mb-4">Search for top placement drives, apply instantly, and track your selection status in real-time.</p>
+                <a href="{{ url_for('login', role='student') }}" class="btn btn-outline-primary w-100 stretched-link">Login as Student</a>
+            </div>
         </div>
     </div>
+
+    <!-- Company Card -->
     <div class="col-md-4 mb-4">
-        <div class="card p-4 h-100">
-            <div class="mb-3"><span class="fs-1">🏢</span></div>
-            <h3>For Companies</h3>
-            <p class="text-muted">Post job openings, manage applicants, and find the best talent for your organization.
-            </p>
+        <div class="card h-100 text-center p-4 border-0 shadow-sm hover-up animate-card">
+            <div class="card-body">
+                <div class="icon-box mb-4 mx-auto bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-briefcase-fill fs-2"></i>
+                </div>
+                <h3 class="fw-bold mb-3">Companies</h3>
+                <p class="text-muted mb-4">Reach out to thousands of students, post drives, and manage the entire hiring pipeline effortlessly.</p>
+                <a href="{{ url_for('login', role='company') }}" class="btn btn-outline-success w-100 stretched-link">Login as Company</a>
+            </div>
         </div>
     </div>
+
+    <!-- Admin Card -->
     <div class="col-md-4 mb-4">
-        <div class="card p-4 h-100">
-            <div class="mb-3"><span class="fs-1">🛡️</span></div>
-            <h3>For Admins</h3>
-            <p class="text-muted">Full control over users, company approvals, and placement drive monitoring.</p>
+        <div class="card h-100 text-center p-4 border-0 shadow-sm hover-up animate-card">
+            <div class="card-body">
+                <div class="icon-box mb-4 mx-auto bg-dark bg-opacity-10 text-dark">
+                    <i class="bi bi-person-fill-gear fs-2"></i>
+                </div>
+                <h3 class="fw-bold mb-3">Administration</h3>
+                <p class="text-muted mb-4">Oversee the entire platform, verify corporate profiles, and ensure a seamless placement experience.</p>
+                <a href="{{ url_for('login', role='admin') }}" class="btn btn-outline-dark w-100 stretched-link">Login as Admin</a>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    .icon-box {
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+    .hover-up {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-radius: 20px !important;
+    }
+    .hover-up:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important;
+    }
+    .display-3 {
+        letter-spacing: -1px;
+    }
+    .animate-card {
+        animation: fadeIn 0.8s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 {% endblock %}
